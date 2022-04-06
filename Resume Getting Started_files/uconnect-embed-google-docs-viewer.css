@@ -1,0 +1,25 @@
+.google_doc_embed {
+	width: 150px;
+	height: 110px;
+	position: relative;
+	margin-bottom: 24px;
+	overflow: hidden;
+	border: 1px solid #ccc;
+	display: inline-block;
+}
+.google_doc_embed a {
+    position: absolute;
+    display:block;
+    width: 150px;
+    height: 130px;
+    background: #fff;
+    opacity: .01;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=1)";
+    filter: alpha(opacity=1);
+}
+.google_doc_embed iframe {
+	margin: -12px -10px -10px -12px;
+	border: none;
+	width: 170px;
+	height: 200px;
+}
