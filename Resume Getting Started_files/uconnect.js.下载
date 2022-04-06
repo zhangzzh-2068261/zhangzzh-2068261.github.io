@@ -1,5 +1,0 @@
-UC_CONFIG.HEADER_IMAGE_WIDTH = jQuery(window).width();
-
-jQuery(function($){
-
-});
