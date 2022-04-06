@@ -1,0 +1,134 @@
+window.uc = window.uc || {};
+jQuery.migrateTrace = uc_jquery_migrate.migrateTrace;
+jQuery.migrateMute  = uc_jquery_migrate.migrateMute;
+
+uc.make_accessible = function() {
+	//Add aria-labelledby attribute for Materialize select dropdowns
+	var selects = jQuery('select:not(.browser-default)');
+	selects.each(function() {
+		var wrapper = jQuery(this).parent('.select-wrapper');
+		var input = wrapper.find('input.select-dropdown');
+		if (this.id) {
+			wrapper.siblings('label[for='+this.id+']').attr('id', this.id + '-label');
+			input.attr('aria-labelledby', this.id + '-label').attr('aria-expanded', false);
+
+			// Readonly Modernizr dropdowns changed to type button for better accessibility
+			if (input.attr('aria-labelledby', this.id + '-label').attr('readonly') == 'readonly')
+				input.attr('aria-labelledby', this.id + '-label').attr('type', 'button').removeAttr('readonly');
+		}
+		input.on('keyup blur focus', function(e){
+			setTimeout(function() {
+				input.attr('aria-expanded', input.next().is(':visible'))
+			}, 300);
+					
+		})
+	})
+};
+
+(function($){
+	window.setup_filter_nav = function () {
+		var filters = $('.filter-nav:not(.initialized)');
+		filters.each(function () {
+			var filter = $(this);
+			filter.addClass('initialized');
+			var selected_shared_tags = filter.find('.all-tags input[type="checkbox"]').next().addBack().clone();
+			//Change the IDs to not have duplicate IDs
+			selected_shared_tags.each(function() {
+				if (this.id)
+					this.id = 't' + this.id;
+				else
+					$(this).attr('for', 't' + $(this).attr('for'))
+			});
+			selected_shared_tags.insertBefore(filter.find('.selected-tags .tag-label.more-tags'));
+
+			filter.find('.selected-tags input:checked').next().addBack().prependTo(filter.find('.selected-tags'));
+
+			var tags_selector = '.selected-tags .tag-label:not(.more-tags):last';
+
+			//If there are shared tags we should always display the see more button
+			if (filter.hasClass('has_shared_tags')) {
+				tags_selector = '.selected-tags .tag-label.more-tags';
+				filter.find('.selected-tags .tag-label.more-tags').show();
+			}
+
+			function display_see_more_filters(){
+				//If there are tags more than it can fit a single line, display the see more filters
+				if (filter.find(tags_selector).position().top > 20) {
+					filter.find('.selected-tags .tag-label.more-tags').show();
+					while (
+						filter.find('.selected-tags .tag-label:not(.more-tags)').last().length &&
+						filter.find('.selected-tags .tag-label.more-tags').position().top > 20
+						) {
+						filter.find('.selected-tags .tag-label:not(.more-tags)').last().prev().addBack().remove();
+					}
+				}
+			}
+
+			//Do this on document load since it needs to have fonts loaded to find the right positions of the elements
+			$( document ).ready( function(){
+				display_see_more_filters()
+			} );
+		});
+
+		// Fix the keyboard input so the user can hit enter or space.
+		$(filters).find('.selected-tags, .all-tags').on('keydown', 'a.more-tags, input[type="checkbox"].tag-input', function(e) {
+			// If this isn't a return or a space, then we'll ignore it.
+			if (e.keyCode != 13 && e.keyCode != 32) {
+				return true;
+			}
+
+			// Checkbox field:
+			if ($(this).is('input[type="checkbox"]')) {
+				$(this).prop("checked", !$(this).prop("checked"));
+				$(this).trigger("change");
+				e.preventDefault();
+				return false;
+			}
+
+			// Link that shows the panel:
+			if ($(this).is('a')) {
+				$(this).trigger("click");
+				e.preventDefault();
+				return false;
+			}
+
+			return true;
+		});
+
+	};
+
+})(jQuery);
+
+jQuery(function ($) {
+	// Auto initialize Materialize components
+	M.AutoInit();
+
+	$( document ).ready(function() {
+		uc.make_accessible();
+
+		jQuery('.js-post-menu').on("click",  function(event){
+			jQuery(this).attr('aria-expanded',  jQuery(this).attr('aria-expanded')==='true'?'false':'true').parent().toggleClass('open')
+		});
+
+		jQuery('.js-author-card').on("keydown",  function(event){
+			if (event.keyCode == 13 || event.keyCode == 32 ) {
+				jQuery(this).attr('aria-expanded',  jQuery(this).attr('aria-expanded')==='true'?'false':'true').next().toggleClass('open');
+			}
+		});
+		jQuery('.has-author-card .author-name').on("focus",  function(event){
+			jQuery(this).parent().find('.js-author-card span').removeClass('screen-reader-text');
+		});
+		jQuery('.has-author-card .author-name').on('mousedown', function(event) {
+			event.preventDefault();
+		});
+		jQuery('body').on("click keydown",  function(e){
+			if (! jQuery('.hovercard .inner-wrapper a, .js-author-card').is(e.target)) {
+				jQuery('.hovercard').removeClass('open')
+				jQuery('.js-author-card').attr('aria-expanded', 'false');
+			}
+		});
+		jQuery('.sub-menu > li:last-child a').focusout(function(event) {
+			jQuery(this).parents('.focus-within').removeClass('focus-within');
+		})
+	});
+});
