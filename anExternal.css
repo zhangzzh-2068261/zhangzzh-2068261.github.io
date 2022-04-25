@@ -1,0 +1,20 @@
+body{
+    
+
+}
+
+section {
+    box-sizing: border-box;
+    border: 1px solid blue;
+    width: 100%;
+    float: left;
+  }
+
+#roundcorners {
+    border-radius: 25px;
+    background: #73AD21;
+    padding: 20px;
+    width: 200px;
+    height: 150px;
+  }
+
